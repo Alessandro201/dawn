@@ -243,6 +243,34 @@ cat document.md | dawn -P
 | `Ctrl+H` | Show all shortcuts |
 | `Esc` | Close panel/modal |
 
+### Preview Navigation
+
+In read-only preview (`dawn -p document.md`), the following less/Vim-style
+shortcuts are available:
+
+| Key | Action |
+|:----|:-------|
+| `Ctrl+D` / `Ctrl+U` | Move down/up half a page |
+| `Ctrl+F` / `Ctrl+B` | Move down/up a full page |
+| `gg` / `G` | Jump to the start/end of the document |
+| `h` / `j` / `k` / `l` | Move left/down/up/right |
+| `w` / `b` | Jump to the next/previous word |
+| `0` / `$` | Jump to the start/end of the line |
+
+Page movements use the current text area height and stop at document boundaries.
+`j` and `k` follow wrapped visual lines. Press `g` twice consecutively for `gg`;
+any other key cancels the pending sequence.
+
+Existing navigation keys remain available: arrows, `PgUp`/`PgDn` and
+`Alt+Up`/`Alt+Down` (half a page), `Ctrl+Home`/`Ctrl+End` (document boundaries),
+and `Home`/`End` (line boundaries). `Ctrl+O` shows the shortcut help.
+
+These bindings apply only to the preview document, not to search or other
+panels. Editing shortcuts retain their existing meanings, including `Ctrl+D`
+(delete element/character), `Ctrl+U` (delete to line start), `Ctrl+F` (focus mode),
+and `Ctrl+B` (toggle cursor syntax visibility). In preview, `Ctrl+B` moves up a
+page instead of toggling syntax visibility.
+
 ---
 
 ## File Format
