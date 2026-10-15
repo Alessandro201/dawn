@@ -249,6 +249,22 @@ cat document.md | dawn -P
 
 ### Preview Navigation
 
+Preview text width can be set in terminal columns:
+
+```bash
+dawn --width 100 -p document.md
+dawn --width 0 -p document.md
+```
+
+`--width 100` centers the text within at most 100 columns, shrinking to fit the
+terminal. `--width 0` uses the available width with four columns of margin on
+each side. Very narrow terminals reduce the margins to keep at least one text
+column. The short form is `-w 100`.
+
+Without this option, preview keeps its existing width of about 70 columns on
+wide terminals. `--width` requires `-p` and does not change editing or print
+layout. Resize the terminal to reflow the preview at the requested width.
+
 In read-only preview (`dawn -p document.md`), the following less/Vim-style
 shortcuts are available:
 

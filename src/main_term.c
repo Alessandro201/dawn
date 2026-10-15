@@ -100,6 +100,7 @@ int32_t main(int32_t argc, char* argv[])
 
     // Handle preview mode
     if (args.flags & ARG_PREVIEW) {
+        app.preview_width = args.preview_width;
         bool ok;
         if (stdin_content) {
             ok = dawn_preview_buffer(stdin_content, stdin_size);

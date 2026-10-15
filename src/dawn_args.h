@@ -28,6 +28,7 @@ typedef struct {
     const char* error_msg; //!< Error message
     int8_t theme; //!< Theme: -1 = not set, 0 = light, 1 = dark
     int32_t timer_mins; //!< Timer override in minutes; -1 if not set, 0 disables
+    int32_t preview_width; //!< Preview width in columns; -1 if not set, 0 uses available width
     uint8_t flags; //!< ArgFlag combination
 } DawnArgs;
 

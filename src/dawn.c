@@ -121,6 +121,13 @@ static inline Layout calc_layout(void)
 
     l.margin = l.text_area_cols > 80 ? (l.text_area_cols - 70) / 2 : 4;
     l.text_width = l.text_area_cols - l.margin * 2;
+    if (app.preview_mode && app.ctx.mode != DAWN_MODE_PRINT && app.preview_width >= 0) {
+        int32_t available = l.text_area_cols - 8;
+        if (available < 1)
+            available = 1;
+        l.text_width = app.preview_width > 0 && app.preview_width < available ? app.preview_width : available;
+        l.margin = (l.text_area_cols - l.text_width) / 2;
+    }
     l.top_margin = 2;
     l.text_height = app.rows - l.top_margin - 2;
     return l;
@@ -4982,6 +4989,7 @@ static void handle_input(void)
 
 bool dawn_engine_init(int8_t theme_override, int32_t timer_override)
 {
+    app.preview_width = -1;
     app.timer_mins = DEFAULT_TIMER_MINUTES;
     app.mode = MODE_WELCOME;
     app.theme = THEME_DARK;

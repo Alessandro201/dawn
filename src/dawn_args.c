@@ -12,18 +12,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+
+#ifndef _WIN32
+#include <getopt.h>
+#endif
 
 // #region Option Definitions
 
-// POSIX options: single-character only
+// Short command-line options
 // -d FILE   Demo mode
 // -t THEME  Set theme (light/dark)
 // -T MINS   Set timer minutes (0 disables)
 // -p FILE   Preview file (read-only)
+// -w COLS   Preview width (0 uses available width)
 // -P        Print mode (render to stdout)
 // -h        Help
 // -v        Version
-static const char* short_opts = "d:t:T:p:Phv";
+static const char* short_opts = "d:t:T:p:w:Phv";
+
+#ifndef _WIN32
+static const struct option long_opts[] = {
+    { "width", required_argument, NULL, 'w' },
+    { NULL, 0, NULL, 0 }
+};
+#endif
 
 // #endregion
 
@@ -92,13 +105,18 @@ DawnArgs args_parse(int32_t argc, char* argv[])
     DawnArgs args = { 0 };
     args.theme = -1; // Not set
     args.timer_mins = -1; // Not set
+    args.preview_width = -1; // Not set
 
     // Reset getopt
     optind = 1;
     opterr = 0;
 
     int32_t opt;
+#ifdef _WIN32
     while ((opt = getopt(argc, argv, short_opts)) != -1) {
+#else
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+#endif
         switch (opt) {
         case 'd':
             args.flags |= ARG_DEMO;
@@ -130,6 +148,19 @@ DawnArgs args_parse(int32_t argc, char* argv[])
             args.file = resolve_path(optarg);
             break;
 
+        case 'w': {
+            char* end = NULL;
+            errno = 0;
+            long width = strtol(optarg, &end, 10);
+            if (end == optarg || *end != '\0' || errno == ERANGE || width < 0 || width > INT32_MAX) {
+                args.flags |= ARG_ERROR;
+                args.error_msg = "Invalid width (use a non-negative column count; 0 uses available width)";
+            } else {
+                args.preview_width = (int32_t)width;
+            }
+            break;
+        }
+
         case 'P':
             args.flags |= ARG_PRINT;
             break;
@@ -144,7 +175,7 @@ DawnArgs args_parse(int32_t argc, char* argv[])
 
         case '?':
             args.flags |= ARG_ERROR;
-            args.error_msg = "Unknown option";
+            args.error_msg = optopt == 'w' ? "--width requires a column count" : "Unknown option";
             break;
 
         case ':':
@@ -185,6 +216,11 @@ DawnArgs args_parse(int32_t argc, char* argv[])
     }
 
     // Validate combinations
+    if (args.preview_width >= 0 && !(args.flags & ARG_PREVIEW)) {
+        args.flags |= ARG_ERROR;
+        args.error_msg = "--width requires -p preview mode";
+    }
+
     if ((args.flags & ARG_DEMO) && (args.flags & ARG_PREVIEW)) {
         args.flags |= ARG_ERROR;
         args.error_msg = "Cannot use -d and -p together";
@@ -233,6 +269,7 @@ void args_print_usage(const char* program_name)
         "\n"
         "Options:\n"
         "  -p file     Preview file in read-only mode\n"
+        "  --width N   Preview width in columns (-w N); 0 uses available width\n"
         "  -P          Print rendered output to stdout and exit\n"
         "  -d file     Demo mode: replay file as if being typed\n"
         "  -t theme    Set theme: 'light' or 'dark'\n"
