@@ -1,3 +1,7 @@
+## Fork Note:
+
+Edit to include vim navigation keys to preview mode.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/hero.png" />
   <img alt="Dawn" src="./assets/hero.png" width="100%" />
