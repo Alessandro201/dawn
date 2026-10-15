@@ -305,6 +305,27 @@ void render_help(void)
     set_bg(get_modal_bg());
     set_fg(get_dim());
 
+    if (app.preview_mode) {
+        const char* shortcuts[][2] = {
+            { "h/j/k/l", "left/down/up/right" },
+            { "^D / ^U", "half page down/up" },
+            { "^F / ^B", "full page down/up" },
+            { "gg / G", "document start/end" },
+            { "w / b", "next/previous word" },
+            { "0 / $", "line start/end" },
+            { "^L / ^S", "contents/search" },
+            { "^O", "show shortcuts" },
+            { "esc", "quit preview" }
+        };
+        for (size_t i = 0; i < sizeof(shortcuts) / sizeof(shortcuts[0]); i++) {
+            move_to(cy, col1);
+            platform_write_str(shortcuts[i][0]);
+            move_to(cy++, col2);
+            platform_write_str(shortcuts[i][1]);
+        }
+        goto help_footer;
+    }
+
     move_to(cy, col1);
     platform_write_str("arrows");
     move_to(cy++, col2);
@@ -384,6 +405,7 @@ void render_help(void)
     platform_write_str("AI chat");
 #endif
 
+help_footer:
     // Footer
     move_to(top + height - 2, left + (width - 22) / 2);
     set_fg(get_dim());

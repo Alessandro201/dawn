@@ -4057,10 +4057,81 @@ static void handle_ai_input(int32_t key)
     }
 }
 
+//! Handle less/Vim navigation only in the read-only document preview.
+static bool handle_preview_navigation(int32_t key)
+{
+    static bool pending_g = false;
+
+    if (!app.preview_mode || app.mode != MODE_WRITING || (app.ai_open && app.ai_focused)) {
+        pending_g = false;
+        return false;
+    }
+
+    if (key == 'g') {
+        if (pending_g)
+            handle_writing(DAWN_KEY_CTRL_HOME);
+        pending_g = !pending_g;
+        return true;
+    }
+    pending_g = false;
+
+    switch (key) {
+    case 4: // Ctrl+D
+        key = DAWN_KEY_PGDN;
+        break;
+    case 21: // Ctrl+U
+        key = DAWN_KEY_PGUP;
+        break;
+    case 6: // Ctrl+F
+    case 2: { // Ctrl+B
+        Layout L = calc_layout();
+        int32_t count = L.text_height > 0 ? L.text_height : 1;
+        int32_t delta = key == 6 ? count : -count;
+        move_cursor(nav_move_visual_line_block_aware(app.cursor, delta, get_text_width(), app.hide_cursor_syntax), false);
+        return true;
+    }
+    case 'G':
+        key = DAWN_KEY_CTRL_END;
+        break;
+    case 'h':
+        key = DAWN_KEY_LEFT;
+        break;
+    case 'j':
+        key = DAWN_KEY_DOWN;
+        break;
+    case 'k':
+        key = DAWN_KEY_UP;
+        break;
+    case 'l':
+        key = DAWN_KEY_RIGHT;
+        break;
+    case 'w':
+        key = DAWN_KEY_CTRL_RIGHT;
+        break;
+    case 'b':
+        key = DAWN_KEY_CTRL_LEFT;
+        break;
+    case '0':
+        key = DAWN_KEY_HOME;
+        break;
+    case '$':
+        key = DAWN_KEY_END;
+        break;
+    default:
+        return false;
+    }
+
+    handle_writing(key);
+    return true;
+}
+
 static void handle_input(void)
 {
     int32_t key = input_read_key();
     if (key == DAWN_KEY_NONE)
+        return;
+
+    if (handle_preview_navigation(key))
         return;
 
     switch (app.mode) {
